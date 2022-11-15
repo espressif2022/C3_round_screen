@@ -12,10 +12,29 @@
 #include "ui_fan.h"
 #include "ui_washing.h"
 
+#include "lv_example_pub.h"
+#include "lv_example_func.h"
+#include "lv_example_image.h"
+
+static bool main_layer_enter_cb(struct lv_layer_t * layer);
+static bool main_layer_exit_cb(struct lv_layer_t * layer);
+static void main_layer_timer_cb(lv_timer_t * tmr);
+
+lv_layer_t main_Layer ={
+    .lv_obj_name    = "main_menu_Layer",
+    .lv_obj_parent  = NULL,
+    .lv_obj_layer   = NULL,
+    .lv_show_layer  = NULL,
+    .enter_cb       = main_layer_enter_cb,
+    .exit_cb        = main_layer_exit_cb,
+    .timer_cb       = main_layer_timer_cb,
+};
+
 typedef struct {
     const char *name;
     const lv_img_dsc_t *icon;
-    void (*create)(ret_cb_t ret_cb);
+    //void (*create)(ret_cb_t ret_cb);
+    struct lv_layer_t * layer;
 } ui_menu_app_t;
 
 LV_IMG_DECLARE(icon_clock);
@@ -26,12 +45,12 @@ LV_IMG_DECLARE(icon_weather);
 LV_IMG_DECLARE(icon_washing);
 
 static ui_menu_app_t menu[] = {
-    {"clock", &icon_clock, ui_clock_init},
-    {"washing", &icon_washing, ui_washing_init},
-    {"fans", &icon_fans, ui_fan_init},
-    {"light", &icon_light, ui_light_init},
-    {"player", &icon_player, ui_player_init},
-    {"weather", &icon_weather, ui_weather_init},
+    {"clock",   &icon_clock,    &clock_Layer},
+    {"washing", &icon_washing,  &washing_Layer},
+    {"fans",    &icon_fans,     &fan_Layer},
+    {"light",   &icon_light,    &light_Layer},
+    {"player",  &icon_player,   &player_Layer},
+    {"weather", &icon_weather,  &weather_Layer},
 };
 
 #define APP_NUM 5//(sizeof(menu) / sizeof(ui_menu_app_t))
@@ -46,6 +65,8 @@ static lv_obj_t *icons[ICONS_SHOW_NUM + 1];
 static lv_coord_t old_y[ICONS_SHOW_NUM + 1];
 static uint8_t visible_index[ICONS_SHOW_NUM];
 static uint8_t invisable_index;
+
+static time_out_count time_500ms;
 
 static void menu_anim_ready_cb(lv_anim_t *a);
 
@@ -111,6 +132,7 @@ static void menu_event_cb(lv_event_t *e)
         } else if (LV_KEY_LEFT == key) {
             extra_icon_index = -(ICONS_SHOW_NUM / 2) - 1;
         }
+        printf("evt=%s\n", (LV_KEY_RIGHT == key)? "LV_KEY_RIGHT":"LV_KEY_LEFT");
 
         lv_img_set_src(icons[invisable_index], menu[get_app_index(extra_icon_index)].icon);
         lv_obj_align(icons[invisable_index], LV_ALIGN_CENTER, 0, (extra_icon_index)* APP_ICON_GAP_PIXEL);
@@ -132,14 +154,22 @@ static void menu_event_cb(lv_event_t *e)
         lv_anim_set_user_data(&a1, (void *)extra_icon_index);
         lv_anim_start(&a1);
     } else if (LV_EVENT_CLICKED == code) {
-        lv_group_set_editing(lv_group_get_default(), false);
-        ui_remove_all_objs_from_encoder_group();
-        menu[get_app_index(0)].create(app_return_cb);
+        printf("evt=%s\n", "LV_EVENT_CLICKED");
+        if(menu[get_app_index(0)].layer){
+            lv_group_set_editing(lv_group_get_default(), false);
+            ui_remove_all_objs_from_encoder_group();
+
+            //submode_item_focus = 0;
+            lv_func_goto_layer(menu[get_app_index(0)].layer);
+        }
+        else{
+            printf("Not supported\n");
+        }
     }
 }
 
-static void menu_anim_ready_cb(lv_anim_t *a)
-{
+    static void menu_anim_ready_cb(lv_anim_t *a)
+    {
     int8_t extra_icon_index = (int8_t)lv_anim_get_user_data(a);
     int8_t dir = extra_icon_index > 0 ? 1 : -1;
     app_index = get_app_index(dir);
@@ -151,15 +181,12 @@ static void menu_anim_ready_cb(lv_anim_t *a)
     printf("dir=%d, app_index=%d, invisable_index=%d\n", dir, app_index, invisable_index);
 }
 
-void ui_menu_init(void)
+void ui_menu_init(lv_obj_t * parent)
 {
-    if (page) {
-        LV_LOG_WARN("menu page already created");
-        return;
-    }
+    page = lv_obj_create(parent);
+    lv_obj_set_size(page, LV_HOR_RES, LV_VER_RES);
+    //lv_obj_set_size(page, lv_obj_get_width(lv_obj_get_parent(page)), lv_obj_get_height(lv_obj_get_parent(page)));
 
-    page = lv_obj_create(lv_scr_act());
-    lv_obj_set_size(page, lv_obj_get_width(lv_obj_get_parent(page)), lv_obj_get_height(lv_obj_get_parent(page)));
     lv_obj_set_style_border_width(page, 0, 0);
     lv_obj_set_style_radius(page, 0, 0);
     lv_obj_clear_flag(page, LV_OBJ_FLAG_SCROLLABLE);
@@ -198,3 +225,37 @@ void ui_menu_init(void)
 
 
 
+static bool main_layer_enter_cb(struct lv_layer_t * layer)
+{
+    bool ret = false;
+    uint32_t i;
+    LV_LOG_USER("lv_obj_name:%s, screen:[%d, %d]", layer->lv_obj_name, LV_HOR_RES, LV_VER_RES);
+    if(NULL == layer->lv_obj_layer){
+		ret = true;
+		layer->lv_obj_layer = lv_obj_create(lv_scr_act());
+        lv_obj_set_size(layer->lv_obj_layer, LV_HOR_RES, LV_VER_RES);
+        lv_obj_set_style_border_width(layer->lv_obj_layer, 0, 0);
+        lv_obj_set_style_pad_all(layer->lv_obj_layer, 0, 0);
+
+        ui_menu_init(layer->lv_obj_layer);
+    }
+    set_time_out(&time_500ms, 500);
+
+    return ret;
+}
+
+
+static bool main_layer_exit_cb(struct lv_layer_t * layer)
+{
+    LV_LOG_USER("");
+    return true;
+}
+
+static void main_layer_timer_cb(lv_timer_t * tmr)
+{
+    if(is_time_out(&time_500ms)){
+		//update_time(NULL);
+    }
+
+    return;
+}

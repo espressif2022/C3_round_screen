@@ -5,14 +5,32 @@
 #include "ui.h"
 #include "ui_clock.h"
 
+#include "lv_example_pub.h"
+#include "lv_example_func.h"
+#include "lv_example_image.h"
+
 static lv_obj_t  *page, *meter = NULL;
 static lv_meter_indicator_t *indic_sec ;
 static lv_meter_indicator_t *indic_min ;
 static lv_meter_indicator_t *indic_hour ;
-static lv_timer_t *timer;
-static ret_cb_t return_callback;
 
-static void clock_handler(lv_timer_t *t)
+static time_out_count time_20ms;
+
+static bool clock_layer_enter_cb(struct lv_layer_t * layer);
+static bool clock_layer_exit_cb(struct lv_layer_t * layer);
+static void clock_layer_timer_cb(lv_timer_t * tmr);
+
+lv_layer_t clock_Layer ={
+    .lv_obj_name    = "clock_Layer",
+    .lv_obj_parent  = NULL,
+    .lv_obj_layer   = NULL,
+    .lv_show_layer  = NULL,
+    .enter_cb       = clock_layer_enter_cb,
+    .exit_cb        = clock_layer_exit_cb,
+    .timer_cb       = clock_layer_timer_cb,
+};
+
+static void clock_handler()
 {
     static time_t time_last = 0;
     time_t now;
@@ -47,21 +65,18 @@ static void clock_event_cb(lv_event_t *e)
 
     } else if (LV_EVENT_LONG_PRESSED == code) {
         lv_indev_wait_release(lv_indev_get_next(NULL));
-        ui_clock_delete();
+        ui_remove_all_objs_from_encoder_group();
+        lv_func_goto_layer(&main_Layer);
     }
 }
 
-void ui_clock_init(ret_cb_t ret_cb)
+void ui_clock_init(lv_obj_t * parent)
 {
-    if (page) {
-        LV_LOG_WARN("clock page already created");
-        return;
-    }
 
-    return_callback = ret_cb;
+    page = lv_obj_create(parent);
+    lv_obj_set_size(page, LV_HOR_RES, LV_VER_RES);
+    //lv_obj_set_size(page, lv_obj_get_width(lv_obj_get_parent(page)), lv_obj_get_height(lv_obj_get_parent(page)));
 
-    page = lv_obj_create(lv_scr_act());
-    lv_obj_set_size(page, lv_obj_get_width(lv_obj_get_parent(page)), lv_obj_get_height(lv_obj_get_parent(page)));
     lv_obj_set_style_border_width(page, 0, 0);
     lv_obj_set_style_radius(page, 0, 0);
     lv_obj_clear_flag(page, LV_OBJ_FLAG_SCROLLABLE);
@@ -92,23 +107,37 @@ void ui_clock_init(ret_cb_t ret_cb)
     indic_min = lv_meter_add_needle_img(meter, scale_min, &img_needle_min, 4, 15);
     indic_sec = lv_meter_add_needle_img(meter, scale_min, &img_needle_sec, 5, 15); // second needle on the top
 
-    timer = lv_timer_create(clock_handler, 200, NULL);
-    clock_handler(timer);
-
     lv_obj_add_event_cb(page, clock_event_cb, LV_EVENT_FOCUSED, NULL);
     lv_obj_add_event_cb(page, clock_event_cb, LV_EVENT_LONG_PRESSED, NULL);
     ui_add_obj_to_encoder_group(page);
 }
 
-void ui_clock_delete(void)
+static bool clock_layer_enter_cb(struct lv_layer_t * layer)
 {
-    if (page) {
-        ui_remove_all_objs_from_encoder_group();
-        lv_timer_del(timer);
-        lv_obj_del(page);
-        page = NULL;
-        if (return_callback) {
-            return_callback(NULL);
-        }
+    bool ret = false;
+
+	if(NULL == layer->lv_obj_layer){
+		ret = true;
+		layer->lv_obj_layer = lv_obj_create(lv_scr_act());
+        lv_obj_remove_style_all(layer->lv_obj_layer);
+        lv_obj_set_size(layer->lv_obj_layer, LV_HOR_RES, LV_VER_RES);
+
+        ui_clock_init(layer->lv_obj_layer);
+        set_time_out(&time_20ms, 20);
+	}
+
+	return ret;
+}
+
+static bool clock_layer_exit_cb(struct lv_layer_t * layer)
+{
+    LV_LOG_USER("");
+    return true;
+}
+
+static void clock_layer_timer_cb(lv_timer_t * tmr)
+{
+    if(is_time_out(&time_20ms)){
+        clock_handler();
     }
 }

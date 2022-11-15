@@ -5,10 +5,27 @@
 #include "ui.h"
 #include "ui_fan.h"
 
+#include "lv_example_pub.h"
+#include "lv_example_func.h"
+#include "lv_example_image.h"
+
 static lv_obj_t  *page;
-static ret_cb_t return_callback;
+static time_out_count time_20ms;
+static const char *TAG = "Fan";
 
+static bool fan_layer_enter_cb(struct lv_layer_t * layer);
+static bool fan_layer_exit_cb(struct lv_layer_t * layer);
+static void fan_layer_timer_cb(lv_timer_t * tmr);
 
+lv_layer_t fan_Layer ={
+    .lv_obj_name    = "fan_Layer",
+    .lv_obj_parent  = NULL,
+    .lv_obj_layer   = NULL,
+    .lv_show_layer  = NULL,
+    .enter_cb       = fan_layer_enter_cb,
+    .exit_cb        = fan_layer_exit_cb,
+    .timer_cb       = fan_layer_timer_cb,
+};
 
 static void fan_event_cb(lv_event_t *e)
 {
@@ -19,24 +36,21 @@ static void fan_event_cb(lv_event_t *e)
         lv_group_set_editing(lv_group_get_default(), true);
     } else if (LV_EVENT_KEY == code) {
         uint32_t key = lv_event_get_key(e);
+        printf("%s, key=%d\n", TAG, key);
 
     } else if (LV_EVENT_LONG_PRESSED == code) {
         lv_indev_wait_release(lv_indev_get_next(NULL));
-        ui_fan_delete();
+        ui_remove_all_objs_from_encoder_group();
+        lv_func_goto_layer(&main_Layer);
     }
 }
 
-void ui_fan_init(ret_cb_t ret_cb)
+void ui_fan_init(lv_obj_t * parent)
 {
-    if (page) {
-        LV_LOG_WARN("fan page already created");
-        return;
-    }
+    page = lv_obj_create(parent);
+    lv_obj_set_size(page, LV_HOR_RES, LV_VER_RES);
+    //lv_obj_set_size(page, lv_obj_get_width(lv_obj_get_parent(page)), lv_obj_get_height(lv_obj_get_parent(page)));
 
-    return_callback = ret_cb;
-
-    page = lv_obj_create(lv_scr_act());
-    lv_obj_set_size(page, lv_obj_get_width(lv_obj_get_parent(page)), lv_obj_get_height(lv_obj_get_parent(page)));
     lv_obj_set_style_border_width(page, 0, 0);
     lv_obj_set_style_radius(page, 0, 0);
     lv_obj_clear_flag(page, LV_OBJ_FLAG_SCROLLABLE);
@@ -87,14 +101,32 @@ void ui_fan_init(ret_cb_t ret_cb)
     ui_add_obj_to_encoder_group(page);
 }
 
-void ui_fan_delete(void)
+static bool fan_layer_enter_cb(struct lv_layer_t * layer)
 {
-    if (page) {
-        ui_remove_all_objs_from_encoder_group();
-        lv_obj_del(page);
-        page = NULL;
-        if (return_callback) {
-            return_callback(NULL);
-        }
+    bool ret = false;
+
+	if(NULL == layer->lv_obj_layer){
+		ret = true;
+		layer->lv_obj_layer = lv_obj_create(lv_scr_act());
+        lv_obj_remove_style_all(layer->lv_obj_layer);
+        lv_obj_set_size(layer->lv_obj_layer, LV_HOR_RES, LV_VER_RES);
+
+        ui_fan_init(layer->lv_obj_layer);
+        set_time_out(&time_20ms, 20);
+	}
+
+	return ret;
+}
+
+static bool fan_layer_exit_cb(struct lv_layer_t * layer)
+{
+    LV_LOG_USER("");
+    return true;
+}
+
+static void fan_layer_timer_cb(lv_timer_t * tmr)
+{
+    if(is_time_out(&time_20ms)){
+        //fan_handler();
     }
 }

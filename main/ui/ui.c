@@ -9,6 +9,7 @@
 #include "ui.h"
 #include "ui_menu.h"
 #include <math.h>
+#include "lv_example_pub.h"
 
 static const char *TAG = "ui";
 static lv_group_t *group;
@@ -34,7 +35,7 @@ void ui_init(void)
 
     // }
 
-    ui_menu_init();
+    lv_home_create();
 }
 
 void ui_add_obj_to_encoder_group(lv_obj_t *obj)

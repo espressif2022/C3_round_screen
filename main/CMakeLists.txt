@@ -1,2 +1,9 @@
-idf_component_register(SRC_DIRS "." "ui/fonts" "ui/imgs" "ui" 
-                    INCLUDE_DIRS .)
+idf_component_register(SRC_DIRS
+                    "."
+                    "ui/fonts"
+                    "ui/imgs"
+                    "ui"
+                    "ui/layer_manage"
+                    INCLUDE_DIRS
+                    "."
+                    "ui/layer_manage")

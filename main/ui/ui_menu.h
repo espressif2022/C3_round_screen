@@ -5,9 +5,6 @@
 extern "C" {
 #endif
 
-void ui_menu_init(void);
-void ui_menu_delete(void);
-
 #ifdef __cplusplus
 }
 #endif

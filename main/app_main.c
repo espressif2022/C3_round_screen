@@ -26,7 +26,7 @@
 static const char *TAG = "main";
 
 
-#define MEMORY_MONITOR 1
+#define MEMORY_MONITOR 0
 
 #if MEMORY_MONITOR
 
