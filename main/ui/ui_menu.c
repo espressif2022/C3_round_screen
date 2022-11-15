@@ -44,11 +44,11 @@ LV_IMG_DECLARE(icon_player);
 LV_IMG_DECLARE(icon_weather);
 LV_IMG_DECLARE(icon_washing);
 
-static ui_menu_app_t menu[] = {
+static const ui_menu_app_t menu[] = {
     {"clock",   &icon_clock,    &clock_Layer},
     {"washing", &icon_washing,  &washing_Layer},
     {"fans",    &icon_fans,     &fan_Layer},
-    {"light",   &icon_light,    &light_Layer},
+    {"light",   &icon_light,    &light_2color_Layer},
     {"player",  &icon_player,   &player_Layer},
     {"weather", &icon_weather,  &weather_Layer},
 };

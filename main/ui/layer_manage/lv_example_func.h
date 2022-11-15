@@ -77,6 +77,7 @@ extern lv_layer_t fan_Layer;
 extern lv_layer_t light_Layer;
 extern lv_layer_t player_Layer;
 extern lv_layer_t washing_Layer;
+extern lv_layer_t light_2color_Layer;
 
 extern void lv_func_goto_layer(lv_layer_t * dst_layer);
 

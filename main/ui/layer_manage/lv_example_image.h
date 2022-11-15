@@ -35,8 +35,26 @@ LV_IMG_DECLARE(icon_washing);
 LV_IMG_DECLARE(img_weather);
 LV_IMG_DECLARE(img_bg);
 LV_IMG_DECLARE(espressif_logo);
-LV_IMG_DECLARE(part_1);
-LV_IMG_DECLARE(part_2);
+
+LV_IMG_DECLARE(light_close_bg)
+LV_IMG_DECLARE(light_close_pwm)
+LV_IMG_DECLARE(light_close_status)
+LV_IMG_DECLARE(light_cool_100)
+LV_IMG_DECLARE(light_cool_25)
+LV_IMG_DECLARE(light_cool_50)
+LV_IMG_DECLARE(light_cool_75)
+LV_IMG_DECLARE(light_cool_bg)
+LV_IMG_DECLARE(light_warm_100)
+LV_IMG_DECLARE(light_warm_25)
+LV_IMG_DECLARE(light_warm_50)
+LV_IMG_DECLARE(light_warm_75)
+LV_IMG_DECLARE(light_warm_bg)
+
+LV_IMG_DECLARE(light_pwm_00)
+LV_IMG_DECLARE(light_pwm_25)
+LV_IMG_DECLARE(light_pwm_50)
+LV_IMG_DECLARE(light_pwm_75)
+LV_IMG_DECLARE(light_pwm_100)
 
 /********************************
  * font
