@@ -29,6 +29,7 @@ static uint8_t flash_main_step = 0;
 
 static lv_obj_t * page;
 static lv_obj_t * img_face, *img_eye_bg, *img_eye, * img_mouth, *img_eye_fade;
+static lv_obj_t * img_eye_left, * img_eye_right;
 
 static time_out_count time_50ms, time_screen_off_1min;
 static time_out_count time_enter_clock={
@@ -109,6 +110,15 @@ void ui_flash_face_init(lv_obj_t * parent)
 	img_eye = lv_img_create(page);
     lv_img_set_src(img_eye, &standby_eye_3);
     lv_obj_align(img_eye, LV_ALIGN_CENTER, 0, 0);
+	lv_obj_add_flag(img_eye, LV_OBJ_FLAG_HIDDEN);
+
+	img_eye_left = lv_img_create(page);
+    lv_img_set_src(img_eye_left, &standby_eye_left);
+    lv_obj_align(img_eye_left, LV_ALIGN_TOP_LEFT, 70, 105);
+
+	img_eye_right = lv_img_create(page);
+    lv_img_set_src(img_eye_right, &standby_eye_right);
+    lv_obj_align(img_eye_right, LV_ALIGN_TOP_RIGHT, 163, 105);
 
     img_mouth = lv_img_create(page);
     lv_img_set_src(img_mouth, &standby_mouth_2);
@@ -156,11 +166,17 @@ static bool clock_screen_layer_exit_cb(struct lv_layer_t * layer)
 	LV_LOG_USER("");
 }
 
-
-static void set_anim_eye(void * obj, int32_t v)
+static void set_anim_left_eye(void * obj, int32_t v)
 {
 	if(0 == flash_main_step){
-		lv_obj_set_x(obj, v);
+		lv_obj_set_x(img_eye_left, v);
+	}
+}
+
+static void set_anim_right_eye(void * obj, int32_t v)
+{
+	if(0 == flash_main_step){
+		lv_obj_set_x(img_eye_right, v);
 	}
 }
 
@@ -177,19 +193,29 @@ static void clock_screen_layer_timer_cb(lv_timer_t * tmr)
 				if(0 == flash_sub_step){
 					printf("set eye move\r\n");
     				lv_img_set_src(img_eye_bg, &standby_eye_open);
-    				lv_img_set_src(img_eye, &standby_eye_2);
 					lv_obj_align(img_eye_bg, LV_ALIGN_CENTER, 0, 0);
-					lv_obj_align(img_eye, LV_ALIGN_CENTER, 0, 0);
+
+					lv_obj_align(img_eye_left, LV_ALIGN_TOP_LEFT, 75, 100);
+					lv_obj_align(img_eye_right, LV_ALIGN_TOP_LEFT, 115, 100);
+
+					lv_obj_clear_flag(img_eye_left, LV_OBJ_FLAG_HIDDEN);
+					lv_obj_clear_flag(img_eye_right, LV_OBJ_FLAG_HIDDEN);
+					lv_obj_add_flag(img_eye, LV_OBJ_FLAG_HIDDEN);
 
     				lv_anim_init(&anim_eye);
-    				lv_anim_set_var(&anim_eye, img_eye);
+					lv_anim_set_var(&anim_eye, img_eye_left);
 					lv_anim_set_delay(&anim_eye, 0);
-					lv_anim_set_values(&anim_eye, lv_obj_get_x_aligned(img_eye) - 20, lv_obj_get_x_aligned(img_eye) + 20);
-					lv_anim_set_exec_cb(&anim_eye, set_anim_eye);
-					lv_anim_set_path_cb(&anim_eye, lv_anim_path_bounce);
+					lv_anim_set_path_cb(&anim_eye, lv_anim_path_ease_in_out);
 					lv_anim_set_time(&anim_eye, 2000);
 					lv_anim_set_playback_time(&anim_eye, 1000);
     				lv_anim_set_repeat_count(&anim_eye, LV_ANIM_REPEAT_INFINITE);
+
+					lv_anim_set_values(&anim_eye, lv_obj_get_x_aligned(img_eye_left) + 0, lv_obj_get_x_aligned(img_eye_left) - 50);
+					lv_anim_set_exec_cb(&anim_eye, set_anim_left_eye);
+					lv_anim_start(&anim_eye);
+
+					lv_anim_set_values(&anim_eye, lv_obj_get_x_aligned(img_eye_right) + 0, lv_obj_get_x_aligned(img_eye_right) + 50);
+					lv_anim_set_exec_cb(&anim_eye, set_anim_right_eye);
 					lv_anim_start(&anim_eye);
 					flash_sub_step +=1;
 				}
@@ -211,10 +237,14 @@ static void clock_screen_layer_timer_cb(lv_timer_t * tmr)
 			case 1:
 				if(0 == flash_sub_step){
 					lv_img_set_src(img_eye_bg, &standby_eye_open);
-					lv_img_set_src(img_eye, &standby_eye_3);
+					lv_img_set_src(img_eye, &standby_eye_2);
 					lv_obj_align(img_eye_bg, LV_ALIGN_CENTER, 0, 0);
 					lv_obj_align(img_eye, LV_ALIGN_CENTER, 0, 0);
+
 					lv_obj_add_flag(img_eye_fade, LV_OBJ_FLAG_HIDDEN);
+					lv_obj_add_flag(img_eye_left, LV_OBJ_FLAG_HIDDEN);
+					lv_obj_add_flag(img_eye_right, LV_OBJ_FLAG_HIDDEN);
+					lv_obj_clear_flag(img_eye, LV_OBJ_FLAG_HIDDEN);
 				}
 				if(flash_sub_step++ > 40){//0-4000
 					flash_sub_step = 0;

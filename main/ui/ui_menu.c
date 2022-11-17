@@ -246,6 +246,7 @@ static bool main_layer_enter_cb(struct lv_layer_t * layer)
         ui_menu_init(layer->lv_obj_layer);
     }
     set_time_out(&time_500ms, 500);
+    reload_screenOff_timer();
 
     return ret;
 }
