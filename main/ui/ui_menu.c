@@ -47,13 +47,13 @@ LV_IMG_DECLARE(icon_washing);
 static const ui_menu_app_t menu[] = {
     {"clock",   &icon_clock,    &clock_Layer},
     {"washing", &icon_washing,  &washing_Layer},
-    {"fans",    &icon_fans,     &fan_Layer},
+    {"fans",    &icon_fans,     &thermostat_Layer},
     {"light",   &icon_light,    &light_2color_Layer},
     {"player",  &icon_player,   &player_Layer},
     {"weather", &icon_weather,  &weather_Layer},
 };
 
-#define APP_NUM 5//(sizeof(menu) / sizeof(ui_menu_app_t))
+#define APP_NUM 4//(sizeof(menu) / sizeof(ui_menu_app_t))
 #define APP_ICON_GAP_PIXEL (80)
 #define ICONS_SHOW_NUM 3
 
@@ -153,6 +153,7 @@ static void menu_event_cb(lv_event_t *e)
         lv_anim_set_time(&a1, 200);
         lv_anim_set_user_data(&a1, (void *)extra_icon_index);
         lv_anim_start(&a1);
+        reload_screenOff_timer();
     } else if (LV_EVENT_CLICKED == code) {
         printf("evt=%s\n", "LV_EVENT_CLICKED");
         if(menu[get_app_index(0)].layer){
@@ -165,6 +166,7 @@ static void menu_event_cb(lv_event_t *e)
         else{
             printf("Not supported\n");
         }
+        reload_screenOff_timer();
     }
 }
 
@@ -192,12 +194,16 @@ void ui_menu_init(lv_obj_t * parent)
     lv_obj_clear_flag(page, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_center(page);
     lv_obj_refr_size(page);
+    lv_obj_set_style_bg_color(page, lv_color_make(0x0, 0x0, 0x0), 0);
 
+    /*
     image_bg = lv_img_create(page);
     LV_IMG_DECLARE(img_bg);
     lv_img_set_src(image_bg, &img_bg);
     lv_obj_align(image_bg, LV_ALIGN_CENTER, 0, 0);
     lv_obj_set_style_img_opa(image_bg, LV_OPA_60, 0);
+    */
+    image_bg = page;
 
     for (int i = 0; i < ICONS_SHOW_NUM; i++) {
         visible_index[i] = i;
@@ -253,6 +259,8 @@ static bool main_layer_exit_cb(struct lv_layer_t * layer)
 
 static void main_layer_timer_cb(lv_timer_t * tmr)
 {
+    trigger_screenOff_timer(&main_Layer);
+
     if(is_time_out(&time_500ms)){
 		//update_time(NULL);
     }

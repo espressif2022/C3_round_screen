@@ -35,7 +35,7 @@ typedef struct{
 }ui_light_img_t;
 
 static lv_obj_t *page;
-static time_out_count time_20ms;
+static time_out_count time_20ms, time_500ms;
 
 static lv_obj_t * img_light_bg, *img_pwm_set;
 static lv_obj_t * img_light_pwm_25, *img_light_pwm_50, *img_light_pwm_75, *img_light_pwm_100, *img_light_pwm_0;
@@ -79,17 +79,21 @@ static void light_2color_event_cb(lv_event_t *e)
         lv_group_set_editing(lv_group_get_default(), true);
     } else if (LV_EVENT_KEY == code) {
         uint32_t key = lv_event_get_key(e);
-        printf("evt=%s\n", (LV_KEY_RIGHT == key)? "LV_KEY_RIGHT":"LV_KEY_LEFT");
-
-        if(LV_KEY_RIGHT == key){
-            if(light_set_conf.light_pwm < 100){
-                light_set_conf.light_pwm += 25;
+        if(is_time_out(&time_500ms)){
+            printf("evt=%s\n", (LV_KEY_RIGHT == key)? "LV_KEY_RIGHT":"LV_KEY_LEFT");
+            if(LV_KEY_RIGHT == key){
+                if(light_set_conf.light_pwm < 100){
+                    light_set_conf.light_pwm += 25;
+                }
+            }
+            else if(LV_KEY_LEFT == key){
+                if(light_set_conf.light_pwm > 0){
+                    light_set_conf.light_pwm -= 25;
+                }
             }
         }
-        else if(LV_KEY_LEFT == key){
-            if(light_set_conf.light_pwm > 0){
-                light_set_conf.light_pwm -= 25;
-            }
+        else{
+            printf("operation too quickly, wait....\n");
         }
     } else if (LV_EVENT_CLICKED == code) {
         printf("evt=%s\n", "LV_EVENT_CLICKED");
@@ -174,6 +178,7 @@ static bool light_2color_layer_enter_cb(struct lv_layer_t * layer)
 
         ui_light_2color_init(layer->lv_obj_layer);
         set_time_out(&time_20ms, 20);
+        set_time_out(&time_500ms, 500);
 	}
 
 	return ret;

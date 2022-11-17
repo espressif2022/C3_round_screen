@@ -56,6 +56,23 @@ LV_IMG_DECLARE(light_pwm_50)
 LV_IMG_DECLARE(light_pwm_75)
 LV_IMG_DECLARE(light_pwm_100)
 
+LV_IMG_DECLARE(AC_BG)
+LV_IMG_DECLARE(AC_temper)
+LV_IMG_DECLARE(AC_unit)
+
+LV_IMG_DECLARE(standby_eye_left)
+LV_IMG_DECLARE(standby_eye_right)
+LV_IMG_DECLARE(standby_eye_1)
+LV_IMG_DECLARE(standby_eye_2)
+LV_IMG_DECLARE(standby_eye_close)
+LV_IMG_DECLARE(standby_face)
+LV_IMG_DECLARE(standby_mouth_2)
+LV_IMG_DECLARE(standby_eye_1_fade)
+LV_IMG_DECLARE(standby_eye_3)
+LV_IMG_DECLARE(standby_eye_open)
+LV_IMG_DECLARE(standby_mouth_1)
+
+
 /********************************
  * font
 ********************************/

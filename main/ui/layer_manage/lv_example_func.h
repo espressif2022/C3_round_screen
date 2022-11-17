@@ -33,7 +33,7 @@ extern "C" {
 
 #define USER_MAINMENU_MAX       3
 
-#define TIME_ENTER_CLOCK_2MIN    (2*60*1000)/5///2min (2*60*1000)/(50 ms)
+#define TIME_ENTER_CLOCK_2MIN    (2*60*1000)/12///2min (2*60*1000)/(50 ms)
 //#define TIME_ENTER_CLOCK_2MIN    (0x88*60*1000)/1//2min (2*60*1000)/(50 ms)
 
 #define COLOUR_BLACK            0x000000
@@ -78,6 +78,7 @@ extern lv_layer_t light_Layer;
 extern lv_layer_t player_Layer;
 extern lv_layer_t washing_Layer;
 extern lv_layer_t light_2color_Layer;
+extern lv_layer_t thermostat_Layer;
 
 extern void lv_func_goto_layer(lv_layer_t * dst_layer);
 
